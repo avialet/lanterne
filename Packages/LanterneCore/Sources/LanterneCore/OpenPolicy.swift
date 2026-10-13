@@ -11,10 +11,12 @@ public enum OpenPolicy {
     ]
 
     /// Decision sur le chemin seul (aucune lecture du fichier) : `isExecutableFile` vient de
-    /// `FileManager.isExecutableFile` pour un fichier ordinaire (faux pour un dossier).
-    public static func revealsInsteadOfOpening(path: String, isExecutableFile: Bool) -> Bool {
+    /// `FileManager.isExecutableFile` pour un fichier ordinaire (faux pour un dossier) ;
+    /// `isDirectory` dit si le chemin est un dossier (une vraie app est un paquet, donc un dossier :
+    /// un fichier ou un lien nomme `x.app` qui n'en est pas un est montre, pas ouvert).
+    public static func revealsInsteadOfOpening(path: String, isExecutableFile: Bool, isDirectory: Bool = false) -> Bool {
         let ext = (path as NSString).pathExtension.lowercased()
-        if ext == "app" { return false }
+        if ext == "app" { return !isDirectory }
         if revealedExtensions.contains(ext) { return true }
         if !ext.isEmpty, let type = UTType(filenameExtension: ext) {
             if type.conforms(to: .application) { return false }

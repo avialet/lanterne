@@ -29,7 +29,8 @@ enum Launcher {
         var isDirectory: ObjCBool = false
         let exists = FileManager.default.fileExists(atPath: item.target, isDirectory: &isDirectory)
         let executable = exists && !isDirectory.boolValue && FileManager.default.isExecutableFile(atPath: item.target)
-        return OpenPolicy.revealsInsteadOfOpening(path: item.target, isExecutableFile: executable)
+        return OpenPolicy.revealsInsteadOfOpening(path: item.target, isExecutableFile: executable,
+                                                  isDirectory: exists && isDirectory.boolValue)
     }
 
     /// Montre l'element dans le Finder (app, fichier, dossier) ; false pour un reglage ou une action.

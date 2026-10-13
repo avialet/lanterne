@@ -1,8 +1,8 @@
 import Foundation
 import LanterneCore
 
-private func reveals(_ path: String, executable: Bool = false) -> Bool {
-    OpenPolicy.revealsInsteadOfOpening(path: path, isExecutableFile: executable)
+private func reveals(_ path: String, executable: Bool = false, directory: Bool = false) -> Bool {
+    OpenPolicy.revealsInsteadOfOpening(path: path, isExecutableFile: executable, isDirectory: directory)
 }
 
 let openPolicyTests: (String, [Test]) = ("OpenPolicy", [
@@ -18,10 +18,15 @@ let openPolicyTests: (String, [Test]) = ("OpenPolicy", [
         expect(!reveals("/tmp/notes"), "fichier ordinaire")
     },
     Test("documentsAndAppsStillOpen") {
-        for path in ["/tmp/Rapport.pdf", "/tmp/notes.md", "/tmp/photo.jpg", "/tmp/Budget.numbers", "/Applications/Notes.app",
-                     "/tmp/dossier"] {
+        for path in ["/tmp/Rapport.pdf", "/tmp/notes.md", "/tmp/photo.jpg", "/tmp/Budget.numbers", "/tmp/dossier"] {
             expect(!reveals(path), path)
         }
-        expect(!reveals("/Applications/Outil.app", executable: true), "une app reste ouvrable")
+        expect(!reveals("/Applications/Notes.app", directory: true), "une vraie app (paquet) reste ouvrable")
+    },
+    Test("fakeAppFileIsShown") {
+        // Un fichier ou un lien nomme x.app qui n'est pas un paquet d'app : montre, jamais ouvert.
+        expect(reveals("/tmp/x.app"), "fichier x.app")
+        expect(reveals("/tmp/x.app", executable: true), "script nomme x.app")
+        expect(reveals("/tmp/X.APP"), "majuscules")
     },
 ])
