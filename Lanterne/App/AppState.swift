@@ -344,7 +344,19 @@ final class AppState {
 
     // MARK: Actions du panneau
 
+    /// Texte du panneau pour un resultat qui ne s'ouvre pas directement.
+    static let guardedNotice = "Script : montr\u{00E9} dans le Finder"
+
     func open(_ ranked: Ranked) {
+        if Launcher.isGuarded(ranked.item) {
+            Launcher.reveal(ranked.item)
+            flash(Self.guardedNotice)
+            Task {
+                try? await Task.sleep(for: .milliseconds(700))
+                self.hidePanel()
+            }
+            return
+        }
         guard Launcher.open(ranked.item) else {
             flash("Introuvable : \(ranked.item.title)")
             return

@@ -8,5 +8,6 @@ run([
     settingsCatalogTests,
     symbolicHotKeysTests,
     habitStoreTests,
+    openPolicyTests,
     benchTests,
 ])

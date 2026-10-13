@@ -23,6 +23,15 @@ enum Launcher {
         }
     }
 
+    /// Script, executable, installeur... : Retour le montre dans le Finder au lieu de l'ouvrir (OpenPolicy).
+    static func isGuarded(_ item: Item) -> Bool {
+        guard item.kind == .file || item.kind == .folder else { return false }
+        var isDirectory: ObjCBool = false
+        let exists = FileManager.default.fileExists(atPath: item.target, isDirectory: &isDirectory)
+        let executable = exists && !isDirectory.boolValue && FileManager.default.isExecutableFile(atPath: item.target)
+        return OpenPolicy.revealsInsteadOfOpening(path: item.target, isExecutableFile: executable)
+    }
+
     /// Montre l'element dans le Finder (app, fichier, dossier) ; false pour un reglage ou une action.
     @discardableResult
     static func reveal(_ item: Item) -> Bool {

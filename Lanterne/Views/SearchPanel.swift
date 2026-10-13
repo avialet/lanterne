@@ -162,6 +162,8 @@ struct SearchPanel: View {
             Spacer(minLength: 12)
             if let notice = state.notice {
                 Text(notice).font(Theme.ui(11.5, weight: .semibold)).foregroundStyle(Theme.accent).lineLimit(1)
+            } else if let selected = state.selected, Launcher.isGuarded(selected.item) {
+                Text(AppState.guardedNotice).font(Theme.ui(11.5, weight: .semibold)).foregroundStyle(Theme.inkSoft).lineLimit(1)
             } else if let key = state.hoveredKey ?? state.selected?.id, let reason = state.reason(for: key) {
                 Text(reason).font(Theme.ui(11.5)).foregroundStyle(Theme.inkFaint).lineLimit(1).truncationMode(.tail)
             }
