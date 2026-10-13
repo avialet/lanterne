@@ -15,12 +15,22 @@ enum Migrations {
                 t.primaryKey("key", .text)
                 t.column("value", .text).notNull()
             }
-            // Tables de l'app : a ajouter ici, par exemple
-            // try db.create(table: "item") { t in
-            //     t.autoIncrementedPrimaryKey("id")
-            //     t.column("createdAt", .datetime).notNull()
-            //     t.column("title", .text).notNull()
-            // }
+            // Une ligne par ouverture : quoi, quand, depuis quelle app, apres quelles lettres.
+            try db.create(table: "openings") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.column("itemKey", .text).notNull().indexed()
+                t.column("title", .text).notNull()
+                t.column("kind", .text).notNull()
+                t.column("openedAt", .datetime).notNull().indexed()
+                t.column("hour", .integer).notNull()
+                t.column("weekday", .integer).notNull()
+                t.column("contextApp", .text)
+                t.column("prefix", .text).notNull().defaults(to: "")
+            }
+            // Elements oublies : plus appris, plus suggeres.
+            try db.create(table: "forgotten") { t in
+                t.primaryKey("itemKey", .text)
+            }
         }
 
         return m

@@ -5,4 +5,8 @@ run([
     matcherTests,
     habitsTests,
     rankerTests,
+    settingsCatalogTests,
+    symbolicHotKeysTests,
+    habitStoreTests,
+    benchTests,
 ])

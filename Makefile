@@ -16,7 +16,7 @@ VIALETAPPS_PATH ?= $(abspath $(CURDIR)/..)
 export VIALETAPPS_PATH
 PLAQUE := $(VIALETAPPS_PATH)/scripts/plaque.swift
 
-.PHONY: gen build xcode-build spm-build run install release dmg-layout test icon clean
+.PHONY: gen build xcode-build spm-build run install release dmg-layout test bench icon clean
 
 # La version vit dans VERSION. Pour Xcode, on la recopie dans Version.xcconfig.
 gen:
@@ -71,6 +71,10 @@ dmg-layout:
 # Tests du noyau : fonctionne avec les seuls Command Line Tools.
 test:
 	cd $(CORE) && swift run lanternecore-check $(FILTER)
+
+# Banc de l'index en release : 10 000 elements, 200 requetes, p95 par frappe (objectif < 10 ms).
+bench:
+	cd $(CORE) && swift run -c release lanternecore-check Bench
 
 # Icone : plaque de l'affiche (glyphe de Brand.swift, initiale s'il est vide), par scripts/plaque.swift.
 icon:

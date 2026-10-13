@@ -160,9 +160,10 @@ public struct Match: Equatable, Sendable {
 /// acronyme (« rs » : Reglages Systeme) > sous-chaine > mots dans le desordre > sous-sequence dense ;
 /// mots-cles au debut d'un mot seulement. Une lettre seule ne trouve que des debuts de mots.
 public enum Matcher {
-    public static func match(_ query: SearchQuery, _ text: SearchText) -> Match? {
+    /// `withRanges: false` : palier et score seulement, sans calculer les plages (classement de l'index).
+    public static func match(_ query: SearchQuery, _ text: SearchText, withRanges: Bool = true) -> Match? {
         guard !query.isEmpty, text.mayContain(query) else { return nil }
-        let title = matchTitle(query, text)
+        let title = matchTitle(query, text, withRanges: withRanges)
         if let title, title.tier >= .acronym { return title }
         let keyword = matchKeywords(query, text)
         switch (title, keyword) {
@@ -173,16 +174,16 @@ public enum Matcher {
         }
     }
 
-    static func matchTitle(_ query: SearchQuery, _ text: SearchText) -> Match? {
+    static func matchTitle(_ query: SearchQuery, _ text: SearchText, withRanges: Bool) -> Match? {
         let q = query.scalars, t = text.scalars
         let n = q.count, m = t.count
         guard n > 0, m > 0 else { return nil }
         let coverage = n <= m ? Double(n) / Double(m) : 1
         func make(_ tier: MatchTier, _ base: Double, _ ranges: [Range<Int>]) -> Match {
-            Match(tier: tier, score: min(1, base + 0.06 * coverage), ranges: merge(ranges.map(text.characterRange)))
+            Match(tier: tier, score: min(1, base + 0.06 * coverage), ranges: withRanges ? merge(ranges.map(text.characterRange)) : [])
         }
         if n <= m {
-            if n == m && q == t { return Match(tier: .exact, score: 1, ranges: [text.characterRange(0..<m)]) }
+            if n == m && q == t { return Match(tier: .exact, score: 1, ranges: withRanges ? [text.characterRange(0..<m)] : []) }
             if hasPrefix(t, at: 0, q) { return make(.prefix, 0.9, [0..<n]) }
             for (index, start) in text.wordStarts.enumerated() where start > 0 && start + n <= m {
                 if hasPrefix(t, at: start, q) {
@@ -195,7 +196,8 @@ public enum Matcher {
         if n <= m, let start = find(t, q) { return make(.substring, 0.54, [start..<start + n]) }
         if query.tokens.count > 1, let ranges = tokens(query.tokens, text) { return make(.tokens, 0.46, ranges) }
         if query.tokens.count == 1, let (ranges, density) = subsequence(q, t) {
-            return Match(tier: .subsequence, score: 0.24 + 0.2 * density, ranges: merge(ranges.map(text.characterRange)))
+            return Match(tier: .subsequence, score: 0.24 + 0.2 * density,
+                         ranges: withRanges ? merge(ranges.map(text.characterRange)) : [])
         }
         return nil
     }
