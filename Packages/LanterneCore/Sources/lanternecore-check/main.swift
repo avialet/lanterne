@@ -10,5 +10,6 @@ run([
     habitStoreTests,
     openPolicyTests,
     vialetActionLinkTests,
+    generationTests,
     benchTests,
 ])

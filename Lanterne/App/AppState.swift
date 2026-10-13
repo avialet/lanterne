@@ -66,6 +66,7 @@ final class AppState {
     private(set) var conflict: SymbolicHotKey?
     private(set) var spotlightShortcutEnabled = true
     @ObservationIgnored private var appSignature: [String: Date] = [:]
+    @ObservationIgnored private var indexGeneration = Generation()
     @ObservationIgnored private var recentFiles: RecentFiles?
     @ObservationIgnored private let spotlight = SpotlightSearch()
     @ObservationIgnored private var furtherTask: Task<Void, Never>?
@@ -204,8 +205,11 @@ final class AppState {
     func rebuildIndex() {
         let exclusions = self.exclusions
         let items = (apps + settingsItems + actions + recents).filter { !exclusions.excludes($0) }
+        let ticket = indexGeneration.next()
         Task {
             let built = await Task.detached { SearchIndex(items: items) }.value
+            // Un index construit avant une demande plus recente (oubli, exclusion) ne l'ecrase jamais.
+            guard self.indexGeneration.accept(ticket) else { return }
             self.index = built
             if self.panel?.isVisible == true || self.demo { self.search(keepSelection: true) }
         }
