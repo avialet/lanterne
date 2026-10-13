@@ -11,8 +11,8 @@ enum Brand {
                                        deep: 0x3E1301, pale: 0xFEEEE7,
                                        night: 0x2C1308, nightInk: 0xFBCCB8)
     /// Pictogramme de la plaque : sous-ensemble SVG absolu (M L H V C Q Z), boite 0-100, trait non rempli.
-    /// Vide = initiale en repli. Dessiner le trace, verifier avec `swift ../scripts/plaque.swift planche`, puis `make icon`.
-    static let glyph = ""
+    /// Lanterne de papier : anneau, deux bandes, flanc arrondi et flamme.
+    static let glyph = "M 50 4 V 14 M 30 14 H 70 M 36 14 C 14 34 14 68 36 88 M 64 14 C 86 34 86 68 64 88 M 30 88 H 70 M 50 36 C 50 46 40 52 40 62 C 40 68 45 72 50 72 C 55 72 60 68 60 62 C 60 52 50 46 50 36 Z"
     /// Trait du glyphe en `deep` plutot qu'en blanc (accent trop clair pour un trait blanc).
     static let strokeDeep = false
     static let identity = AppIdentity(name: name, displayName: displayName, repository: "avialet/lanterne",
@@ -29,8 +29,8 @@ extension Updater {
 }
 
 extension HotKeyController {
-    /// Choisir un raccourci libre : ⇧⌘Espace (Pico), ⌃⌥⌘Espace (Allege), ⌃⇧Espace (Pince) et ⌥⇧Espace (Brouillon)
-    /// sont deja pris. Mettre a jour la ligne « Raccourci global » du README.
+    /// ⌃Espace par defaut (source de saisie precedente, souvent desactivee : voir ShortcutConflicts) ;
+    /// la carte « Remplacer Spotlight » propose ⌘Espace une fois Spotlight libere.
     static let shared = HotKeyController(defaultsKey: Brand.key("HotKey"), logName: Brand.displayName,
-                                         initial: .space([.control, .option, .shift]))
+                                         initial: .space([.control]))
 }
