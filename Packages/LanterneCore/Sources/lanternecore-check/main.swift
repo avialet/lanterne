@@ -4,4 +4,5 @@ run([
     databaseTests,
     matcherTests,
     habitsTests,
+    rankerTests,
 ])
