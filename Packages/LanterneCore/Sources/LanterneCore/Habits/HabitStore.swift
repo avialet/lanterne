@@ -1,7 +1,8 @@
 import Foundation
 import GRDB
 
-/// Ouvertures et elements oublies, dans la base de l'app. Purge au-dela de la duree de memoire et d'un
+/// Ouvertures et elements oublies, dans la base de l'app. Effacement reel (secure_delete, journal WAL vide
+/// apres coup, VACUUM pour tout effacer). Purge au-dela de la duree de memoire et d'un
 /// plafond de lignes ; « Oublier » supprime les ouvertures d'un element et l'exclut de l'apprentissage.
 public final class HabitStore: Sendable {
     public static let maxRows = 20_000
@@ -49,6 +50,7 @@ public final class HabitStore: Sendable {
             try db.execute(sql: "DELETE FROM openings WHERE itemKey = ?", arguments: [itemKey])
             try db.execute(sql: "INSERT OR IGNORE INTO forgotten (itemKey) VALUES (?)", arguments: [itemKey])
         }
+        try database.scrub()
     }
 
     public func unforget(_ itemKey: String) throws {
@@ -65,6 +67,7 @@ public final class HabitStore: Sendable {
             try db.execute(sql: "DELETE FROM openings")
             try db.execute(sql: "DELETE FROM forgotten")
         }
+        try database.scrub(vacuum: true)
     }
 
     /// Retire les ouvertures de plus de `keepDays` jours, puis les plus anciennes au-dela de `maxRows`.
@@ -76,5 +79,6 @@ public final class HabitStore: Sendable {
                 DELETE FROM openings WHERE id NOT IN (SELECT id FROM openings ORDER BY openedAt DESC, id DESC LIMIT ?)
                 """, arguments: [maxRows])
         }
+        try database.scrub()
     }
 }

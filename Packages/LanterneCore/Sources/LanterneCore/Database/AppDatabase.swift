@@ -45,6 +45,8 @@ public final class AppDatabase: Sendable {
         config.busyMode = .timeout(5)
         config.prepareDatabase { db in
             try db.execute(sql: "PRAGMA foreign_keys = ON")
+            // Ce qui est efface est ecrase de zeros, pas seulement marque libre.
+            try db.execute(sql: "PRAGMA secure_delete = ON")
         }
         let pool = try DatabasePool(path: url.path, configuration: config)
         return try AppDatabase(writer: pool, notifiesOtherProcesses: true)
@@ -62,6 +64,15 @@ public final class AppDatabase: Sendable {
                 deliverImmediately: true)
         }
         return result
+    }
+
+    /// Apres un effacement : recopie le journal WAL dans la base et le vide (`TRUNCATE`), hors transaction,
+    /// en attendant les lectures en cours ; `vacuum` reconstruit aussi le fichier (pages libres retirees).
+    public func scrub(vacuum: Bool = false) throws {
+        try writer.barrierWriteWithoutTransaction { db in
+            if vacuum { try db.execute(sql: "VACUUM") }
+            try db.checkpoint(.truncate)
+        }
     }
 
     public var deviceId: String {
