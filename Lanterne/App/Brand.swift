@@ -34,3 +34,8 @@ extension HotKeyController {
     static let shared = HotKeyController(defaultsKey: Brand.key("HotKey"), logName: Brand.displayName,
                                          initial: .space([.control]))
 }
+
+extension MenuBarPresence {
+    /// Icone de barre des menus : masquee quand Vialet rassemble les apps (mode Automatique).
+    static let shared = MenuBarPresence(app: Brand.identity)
+}

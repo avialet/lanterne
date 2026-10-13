@@ -1,23 +1,40 @@
 import AppKit
 import VialetKit
+import LanterneCore
+
+extension AppActions {
+    /// Actions rapides de Lanterne, pour Vialet et les liens `lanterne://`.
+    static let shared = AppActions(Brand.identity, open: { WindowSummoner.show() },
+                                   checkForUpdates: { WindowSummoner.show(); Updater.shared.check() })
+}
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         #if DEBUG
-        // Mode capture : ni raccourci global, ni reseau.
-        if runSnapshotIfRequested() { return }
+        // Mode capture et sondes : ni raccourci global, ni reseau, ni donnees reelles.
+        if runSnapshotIfRequested() || runProbeIfRequested() { return }
         #endif
-        HotKeyController.shared.start { WindowSummoner.toggle() }
+        AppState.shared.start()
+        HotKeyController.shared.start { AppState.shared.togglePanel() }
+        AppActions.shared.register(AppAction("chercher", title: "Chercher", symbol: "magnifyingglass",
+                                             shortcut: HotKeyController.shared.shortcut.display)) {
+            AppState.shared.showPanel()
+        }
+        AppActions.shared.register(AppAction("habitudes", title: "Ce que Lanterne a appris",
+                                             symbol: "clock.arrow.circlepath")) {
+            WindowSummoner.show()
+        }
+        AppActions.shared.publish()
         // Laisse l'app s'afficher avant le moindre appel reseau.
         DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
             MainActor.assumeIsolated { Updater.shared.checkAutomatically() }
         }
     }
 
-    /// Liens `lanterne://` : ouvre la fenetre principale.
+    /// Liens `lanterne://` (`chercher`, `habitudes`, `update`) : voir AppActions.
     func application(_ application: NSApplication, open urls: [URL]) {
-        WindowSummoner.show()
+        AppActions.shared.handle(urls)
     }
 
     /// L'app reste disponible (raccourci global, barre des menus) fenetre fermee.
@@ -28,23 +45,3 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 }
-
-#if DEBUG
-/// Mode capture sans ecran (voir SnapshotRunner) : `Lanterne -LanterneSnapshot <dossier>
-/// [-LanterneSnapshotSeed 1] [-LanterneSnapshotAppearance dark] [-LanterneSnapshotOnly a,b]
-/// [-LanterneSnapshotSize 1000x720]`, avec LANTERNE_DB_PATH vers une base jetable. Ecrit
-/// `mainWindow`, `settings` et `about` (`-sombre` en sombre) dans le dossier, puis quitte.
-extension AppDelegate {
-    func runSnapshotIfRequested() -> Bool {
-        guard SnapshotRequest.parse(prefix: Brand.name, arguments: CommandLine.arguments) != nil else { return false }
-        if UserDefaults.standard.bool(forKey: Brand.key("SnapshotSeed")) { seed() }
-        let standard = SnapshotRunner.standardScenarios(mainWindow: { WindowSummoner.mainWindow }, identity: Brand.identity)
-        // Scenarios propres a l'app : `+ [SnapshotScenario("detail") { ...; return WindowSummoner.mainWindow }]`.
-        return SnapshotRunner.runIfRequested(prefix: Brand.name, scenarios: standard)
-    }
-
-    /// Exemples neutres pour les captures, sans donnee personnelle (chaines en echappements ASCII).
-    private func seed() {
-    }
-}
-#endif
