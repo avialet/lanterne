@@ -3,7 +3,7 @@ import GRDB
 
 /// Ouvertures et elements oublies, dans la base de l'app. Effacement reel (secure_delete, journal WAL vide
 /// apres coup, VACUUM pour tout effacer). Purge au-dela de la duree de memoire et d'un
-/// plafond de lignes ; « Oublier » supprime les ouvertures d'un element et l'exclut de l'apprentissage.
+/// plafond de lignes ; "Oublier" supprime les ouvertures d'un element et l'exclut de l'apprentissage.
 public final class HabitStore: Sendable {
     public static let maxRows = 20_000
     public let database: AppDatabase

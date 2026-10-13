@@ -2,7 +2,7 @@ import SwiftUI
 import LanterneCore
 
 /// Panneau du raccourci : champ, resultats regroupes, pied avec les touches et la raison de la ligne survolee.
-/// Le champ garde le focus : fleches, ↩ (ouvrir), ⌘↩ (Finder), ⌘C (chemin), ⌘⌫ (oublier), ⌘1 a ⌘9, Echap.
+/// Le champ garde le focus : fleches, Retour (ouvrir), Cmd-Retour (Finder), Cmd-C (chemin), Cmd-Suppr (oublier), Cmd-1 a Cmd-9, Echap.
 struct SearchPanel: View {
     @Environment(AppState.self) private var state
     @FocusState private var focused: Bool
@@ -124,7 +124,7 @@ struct SearchPanel: View {
         .padding(.horizontal, 10).padding(.top, 10).padding(.bottom, 3)
     }
 
-    /// « vers 9 h · depuis Mail »
+    /// "vers 9 h - depuis Mail"
     private var contextLine: String? {
         var parts = ["vers \(state.context.hour) h"]
         if let app = state.context.contextApp, let name = AppNames.name(for: app) { parts.append("depuis \(name)") }

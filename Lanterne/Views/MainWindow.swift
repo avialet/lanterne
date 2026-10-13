@@ -39,7 +39,7 @@ enum HabitFilter: String, CaseIterable, Hashable {
     }
 }
 
-/// Fenetre « Habitudes » : ce que Lanterne a appris, element par element, et l'oubli d'un clic.
+/// Fenetre "Habitudes" : ce que Lanterne a appris, element par element, et l'oubli d'un clic.
 struct MainWindow: View {
     @Environment(AppState.self) private var state
     @State private var filter: HabitFilter = .all
@@ -187,7 +187,7 @@ struct MainWindow: View {
     }
 }
 
-/// Un element appris : icone, titre, raison, apps d'origine, bande des 24 heures, « Oublier ».
+/// Un element appris : icone, titre, raison, apps d'origine, bande des 24 heures, "Oublier".
 struct HabitRow: View {
     @Environment(AppState.self) private var state
     let profile: HabitProfile

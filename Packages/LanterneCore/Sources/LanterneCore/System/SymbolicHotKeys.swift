@@ -26,7 +26,7 @@ public enum SymbolicHotKeys {
     ]
 
     /// Valeurs d'usine de macOS pour les raccourcis sur Espace (absents des preferences tant qu'on ne les
-    /// a pas modifies) : ⌃Espace, ⌃⌥Espace, ⌘Espace, ⌥⌘Espace, tous actifs.
+    /// a pas modifies) : Ctrl-Espace, Ctrl-Opt-Espace, Cmd-Espace, Opt-Cmd-Espace, tous actifs.
     static let factory: [SymbolicHotKey] = [
         SymbolicHotKey(id: 60, enabled: true, keyCode: space, modifiers: 1 << 18),
         SymbolicHotKey(id: 61, enabled: true, keyCode: space, modifiers: (1 << 18) | (1 << 19)),
@@ -59,7 +59,7 @@ public enum SymbolicHotKeys {
             .first { $0.enabled && $0.keyCode == keyCode && $0.modifiers == mods }
     }
 
-    /// ⌘Espace est-il encore pris par Spotlight ?
+    /// Cmd-Espace est-il encore pris par Spotlight ?
     public static func isSpotlightEnabled(_ table: [Int: SymbolicHotKey]) -> Bool {
         table[spotlight]?.enabled ?? true
     }

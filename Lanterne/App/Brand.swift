@@ -29,8 +29,8 @@ extension Updater {
 }
 
 extension HotKeyController {
-    /// ⌃Espace par defaut (source de saisie precedente, souvent desactivee : voir ShortcutConflicts) ;
-    /// la carte « Remplacer Spotlight » propose ⌘Espace une fois Spotlight libere.
+    /// Ctrl-Espace par defaut (source de saisie precedente, souvent desactivee : voir ShortcutConflicts) ;
+    /// la carte "Remplacer Spotlight" propose Cmd-Espace une fois Spotlight libere.
     static let shared = HotKeyController(defaultsKey: Brand.key("HotKey"), logName: Brand.displayName,
                                          initial: .space([.control]))
 }

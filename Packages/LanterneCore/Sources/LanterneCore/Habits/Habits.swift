@@ -154,7 +154,7 @@ public struct HabitModel: Sendable {
         profiles[key]?.prefixes[String(query.normalized.prefix(Opening.maxPrefixLength))]?.count ?? 0
     }
 
-    /// Phrase de raison : « 12 fois cette semaine, souvent vers 9 h depuis Mail ».
+    /// Phrase de raison : "12 fois cette semaine, souvent vers 9 h depuis Mail".
     public func explain(key: String, now: Date, appName: (String) -> String?) -> String? {
         guard let p = profiles[key], p.count > 0 else { return nil }
         var text: String

@@ -5,7 +5,7 @@ import LanterneCore
 /// derniere frappe, a partir de 2 caracteres. Les resultats arrivent par lots (200 au plus) ; la requete
 /// s'arrete a la fin de la collecte, au bout de 2 s, ou a la frappe suivante. Une requete synchrone
 /// (`MDQuery`) ne convient pas : sans acces a Documents, Bureau et Telechargements, Spotlight filtre ces
-/// dossiers apres coup et une requete tres large (« a ») peut durer plus de 40 s, sans pouvoir l'annuler.
+/// dossiers apres coup et une requete tres large ("a") peut durer plus de 40 s, sans pouvoir l'annuler.
 @MainActor
 final class SpotlightSearch {
     static let delay: Duration = .milliseconds(150)

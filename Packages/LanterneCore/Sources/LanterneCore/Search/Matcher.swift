@@ -160,7 +160,7 @@ public struct Match: Equatable, Sendable {
 }
 
 /// Appariement d'une requete et d'un texte, par paliers : nom exact > debut du nom > debut de mot >
-/// acronyme (« rs » : Reglages Systeme) > sous-chaine > mots dans le desordre > sous-sequence dense ;
+/// acronyme ("rs" : Reglages Systeme) > sous-chaine > mots dans le desordre > sous-sequence dense ;
 /// mots-cles au debut d'un mot seulement. Une lettre seule ne trouve que des debuts de mots.
 public enum Matcher {
     /// `withRanges: false` : palier et score seulement, sans calculer les plages (classement de l'index).
@@ -245,7 +245,7 @@ public enum Matcher {
         return nil
     }
 
-    /// Initiales consecutives de mots : « rs » -> Reglages Systeme, « vsc » -> Visual Studio Code.
+    /// Initiales consecutives de mots : "rs" -> Reglages Systeme, "vsc" -> Visual Studio Code.
     static func acronym(_ q: [UInt32], _ text: SearchText) -> [Range<Int>]? {
         let starts = text.wordStarts
         guard starts.count >= q.count else { return nil }

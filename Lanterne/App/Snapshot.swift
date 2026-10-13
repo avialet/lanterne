@@ -7,8 +7,8 @@ import LanterneCore
 /// [-LanterneSnapshotSeed 1] [-LanterneSnapshotAppearance dark] [-LanterneSnapshotOnly a,b]`, avec
 /// LANTERNE_DB_PATH vers une base jetable. Apps du systeme seulement, fichiers d'exemple (chemins fictifs),
 /// 40 ouvertures fictives sur 3 semaines, contexte impose (9 h, depuis Mail). Scenarios : standard
-/// (`mainWindow` = Habitudes, `settings`, `about`, `update`), `floatingPanel` (champ vide), `query` (« cla »
-/// tape, avec « Plus loin »), `conflit` (cartes d'accueil du raccourci et de l'acces aux dossiers), `vide` (Habitudes sans rien d'appris).
+/// (`mainWindow` = Habitudes, `settings`, `about`, `update`), `floatingPanel` (champ vide), `query` ("cla"
+/// tape, avec "Plus loin"), `conflit` (cartes d'accueil du raccourci et de l'acces aux dossiers), `vide` (Habitudes sans rien d'appris).
 extension AppDelegate {
     func runSnapshotIfRequested() -> Bool {
         guard SnapshotRequest.parse(prefix: Brand.name, arguments: CommandLine.arguments) != nil else { return false }

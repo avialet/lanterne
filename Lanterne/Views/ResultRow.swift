@@ -1,7 +1,7 @@
 import SwiftUI
 import LanterneCore
 
-/// Ligne de resultat : vraie icone, titre aux lettres trouvees en accent, chemin ou genre, ⌘1 a ⌘9.
+/// Ligne de resultat : vraie icone, titre aux lettres trouvees en accent, chemin ou genre, Cmd-1 a Cmd-9.
 struct ResultRow: View {
     let ranked: Ranked
     let number: Int?

@@ -42,7 +42,7 @@ public enum SettingsCatalog {
                     target: urlScheme + id)
     }
 
-    /// Titres des sections et termes d'indexation (« dicter, dictee, micro »), dans l'ordre des sections.
+    /// Titres des sections et termes d'indexation ("dicter, dictee, micro"), dans l'ordre des sections.
     public static func searchTermsKeywords(_ plist: [String: Any]) -> [String] {
         var out: [String] = []
         for key in plist.keys.sorted() {
@@ -58,8 +58,8 @@ public enum SettingsCatalog {
         return out
     }
 
-    /// Nom interne laisse sans traduction (« PowerPreferences », « FollowUps ») : un seul mot, suffixe
-    /// technique ou majuscule au milieu (au-dela de la deuxieme lettre, pour garder « iCloud »).
+    /// Nom interne laisse sans traduction ("PowerPreferences", "FollowUps") : un seul mot, suffixe
+    /// technique ou majuscule au milieu (au-dela de la deuxieme lettre, pour garder "iCloud").
     public static func isTechnicalName(_ name: String) -> Bool {
         guard !name.contains(where: \.isWhitespace) else { return false }
         if ["Extension", "Settings", "Preferences", "Plugin"].contains(where: { name.hasSuffix($0) }) { return true }

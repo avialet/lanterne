@@ -21,7 +21,7 @@ public enum ItemKind: String, Codable, Sendable, CaseIterable {
 public struct Item: Sendable, Hashable, Identifiable {
     public let key: String
     public let title: String
-    /// Chemin abrege, nom de l'app d'une action, « Reglages Systeme »...
+    /// Chemin abrege, nom de l'app d'une action, "Reglages Systeme"...
     public let subtitle: String
     /// Autres noms (nom anglais d'une app, termes de recherche d'un reglage).
     public let keywords: [String]

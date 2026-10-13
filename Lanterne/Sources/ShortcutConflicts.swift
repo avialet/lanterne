@@ -15,7 +15,7 @@ enum ShortcutConflicts {
         SymbolicHotKeys.conflict(keyCode: Int(shortcut.keyCode), modifiers: shortcut.modifiers, in: table)
     }
 
-    /// Reglages Systeme › Clavier (les raccourcis sont sous « Raccourcis clavier… »).
+    /// Reglages Systeme > Clavier (les raccourcis sont sous "Raccourcis clavier...").
     static func openKeyboardSettings() {
         if let url = URL(string: SettingsCatalog.urlScheme + "com.apple.Keyboard-Settings.extension") {
             NSWorkspace.shared.open(url)

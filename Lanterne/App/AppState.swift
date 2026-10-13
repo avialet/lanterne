@@ -83,7 +83,7 @@ final class AppState {
     var hoveredKey: String?
     private(set) var context = SearchContext(contextApp: nil)
     private(set) var panelOpenCount = 0
-    /// Message passager du pied du panneau (« Chemin copie »).
+    /// Message passager du pied du panneau ("Chemin copie").
     private(set) var notice: String?
     @ObservationIgnored private var noticeTask: Task<Void, Never>?
     @ObservationIgnored private(set) var panel: FloatingPanelController<AnyView>?
@@ -91,7 +91,7 @@ final class AppState {
     @ObservationIgnored private var latencies: [Double] = []
     #endif
 
-    /// Lignes dans l'ordre affiche (⌘1 a ⌘9, fleches).
+    /// Lignes dans l'ordre affiche (Cmd-1 a Cmd-9, fleches).
     var rows: [Ranked] { sections.flatMap(\.items) + (further?.items ?? []) }
     var selected: Ranked? { rows.first { $0.id == selectedKey } ?? rows.first }
 
@@ -331,7 +331,7 @@ final class AppState {
         }
     }
 
-    /// Donne des resultats « Plus loin » (mode capture).
+    /// Donne des resultats "Plus loin" (mode capture).
     func setFurther(_ items: [Item]) {
         let shown = Set(sections.flatMap { $0.items.map(\.id) })
         further = index.further(items, query: SearchQuery(query), shown: shown, exclusions: exclusions)
@@ -371,7 +371,7 @@ final class AppState {
 
     func openSelected() { if let s = selected { open(s) } }
 
-    /// ⌘1 a ⌘9.
+    /// Cmd-1 a Cmd-9.
     func open(number: Int) {
         let rows = self.rows
         guard number >= 1, number <= min(9, rows.count) else { return }

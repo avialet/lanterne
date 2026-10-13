@@ -7,7 +7,7 @@ struct SettingsView: View {
     @Environment(AppState.self) private var state
 
     var body: some View {
-        // Le defilement commence sous un liseré fixe : sans lui, la capture (CALayer.render) de macOS 26
+        // Le defilement commence sous un lisere fixe : sans lui, la capture (CALayer.render) de macOS 26
         // ne rend rien d'une ScrollView collee au bord de la barre de titre.
         VStack(spacing: 0) {
             Theme.paper.frame(height: 1)
@@ -33,7 +33,7 @@ struct SettingsView: View {
     }
 }
 
-/// Passer a ⌘Espace : desactiver d'abord le raccourci de Spotlight dans Clavier, puis le prendre.
+/// Passer a Cmd-Espace : desactiver d'abord le raccourci de Spotlight dans Clavier, puis le prendre.
 struct SpotlightCard: View {
     @Environment(AppState.self) private var state
 

@@ -3,8 +3,8 @@ import CoreServices
 import LanterneCore
 
 /// Apps installees : `/Applications` (et ses sous-dossiers), `/System/Applications`, `~/Applications`,
-/// `/System/Library/CoreServices/Applications` et le Finder. Nom localise (« Calculette ») et nom anglais en
-/// mot-cle (« Calculator ») ; dedoublonnage par bundle id ; a priori Spotlight (derniere ouverture, nombre).
+/// `/System/Library/CoreServices/Applications` et le Finder. Nom localise ("Calculette") et nom anglais en
+/// mot-cle ("Calculator") ; dedoublonnage par bundle id ; a priori Spotlight (derniere ouverture, nombre).
 enum AppIndex {
     /// Dossier et profondeur de parcours (2 : un niveau de sous-dossiers, comme Utilitaires).
     static func roots(systemOnly: Bool = false) -> [(path: String, depth: Int)] {

@@ -10,7 +10,7 @@ enum FolderAccess {
         case granted
         /// Au moins un dossier refuse : a rouvrir dans les Reglages Systeme.
         case denied
-        /// « Plus tard » : la carte ne revient pas.
+        /// "Plus tard" : la carte ne revient pas.
         case dismissed
     }
 
@@ -30,7 +30,7 @@ enum FolderAccess {
         folders.contains { path.hasPrefix($0 + "/") }
     }
 
-    /// Reglages Systeme › Confidentialite et securite › Fichiers et dossiers.
+    /// Reglages Systeme > Confidentialite et securite > Fichiers et dossiers.
     @MainActor static func openSettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders") {
             NSWorkspace.shared.open(url)

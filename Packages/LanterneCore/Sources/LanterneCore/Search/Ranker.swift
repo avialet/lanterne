@@ -235,7 +235,7 @@ public final class SearchIndex: Sendable {
 
     /// Champ vide : ce qu'on ouvre d'habitude a cette heure et depuis cette app, puis, a froid, les elements
     /// recemment utilises d'apres Spotlight. `orphan` reconstruit un element appris absent de l'index
-    /// (fichier ouvert depuis « Plus loin ») ou renvoie nil s'il n'existe plus.
+    /// (fichier ouvert depuis "Plus loin") ou renvoie nil s'il n'existe plus.
     public func suggestions(habits: HabitModel, context: SearchContext, exclusions: Exclusions, limit: Int = 8,
                             orphan: (HabitProfile) -> Item?) -> [Ranked] {
         var ranked: [Ranked] = []
