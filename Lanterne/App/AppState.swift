@@ -49,6 +49,19 @@ final class AppState {
     private(set) var habits = HabitModel(openings: [], now: Date())
     private(set) var forgotten: Set<String> = []
     private(set) var openingCount = 0
+    /// Acces a Documents, Bureau et Telechargements (carte d'accueil).
+    var folderAccess: FolderAccess.State {
+        didSet { defaults.set(folderAccess.rawValue, forKey: Brand.key("FolderAccess")) }
+    }
+    /// Carte d'accueil : acces jamais demande, et aucun fichier recent de ces dossiers (Spotlight les cache).
+    var needsFolderAccess: Bool {
+        switch folderAccess {
+        case .denied: true
+        case .unknown: useRecents && recentsLoaded && !recents.contains { FolderAccess.covers($0.target) }
+        case .granted, .dismissed: false
+        }
+    }
+    private(set) var recentsLoaded = false
     /// Raccourci systeme qui passe avant celui de Lanterne, s'il y en a un.
     private(set) var conflict: SymbolicHotKey?
     private(set) var spotlightShortcutEnabled = true
@@ -108,6 +121,7 @@ final class AppState {
         useActions = flag("SourceActions")
         excludedFolders = d.stringArray(forKey: Brand.key("ExcludedFolders")) ?? []
         excludedTypes = d.string(forKey: Brand.key("ExcludedTypes")) ?? ""
+        folderAccess = FolderAccess.State(rawValue: d.string(forKey: Brand.key("FolderAccess")) ?? "") ?? .unknown
         reloadHabits()
     }
 
@@ -145,7 +159,11 @@ final class AppState {
         }
         if useRecents && !demo {
             if recentFiles == nil {
-                recentFiles = RecentFiles { items in AppState.shared.recents = items; AppState.shared.rebuildIndex() }
+                recentFiles = RecentFiles { items in
+                    AppState.shared.recents = items
+                    AppState.shared.recentsLoaded = true
+                    AppState.shared.rebuildIndex()
+                }
                 recentFiles?.start()
             }
         } else {
@@ -154,6 +172,22 @@ final class AppState {
             if !demo { recents = [] }
         }
     }
+
+    /// Demande l'acces aux trois dossiers (une demande de macOS par dossier), puis relance les fichiers recents.
+    func requestFolderAccess() {
+        Task {
+            let granted = await Task.detached { FolderAccess.request() }.value
+            self.folderAccess = granted ? .granted : .denied
+            self.recentFiles?.stop()
+            self.recentFiles = nil
+            self.reloadSources()
+        }
+    }
+
+    #if DEBUG
+    /// Carte d'acces aux dossiers visible ou non (mode capture), sans rien ecrire dans les preferences.
+    func debugShowFolderAccessCard(_ shown: Bool) { recentsLoaded = shown }
+    #endif
 
     func reloadActions() {
         if useActions && !demo {
@@ -282,8 +316,8 @@ final class AppState {
         furtherTask = Task {
             try? await Task.sleep(for: SpotlightSearch.delay)
             guard !Task.isCancelled, self.query == raw else { return }
-            self.spotlight.search(raw.trimmingCharacters(in: .whitespaces)) { found in
-                guard self.query == raw else { return }
+            self.spotlight.search(raw.trimmingCharacters(in: .whitespaces)) { found, _ in
+                guard self.query == raw, !found.isEmpty else { return }
                 let shown = Set(self.sections.flatMap { $0.items.map(\.id) })
                 self.further = self.index.further(found, query: q, shown: shown, exclusions: self.exclusions)
                 if self.selectedKey == nil { self.selectedKey = self.rows.first?.id }

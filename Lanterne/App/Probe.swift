@@ -55,10 +55,11 @@ extension AppDelegate {
         let kept = found.filter { !exclusions.excludes($0) }
         lines.append("apres exclusions (node_modules, caches, ~/Library) : \(kept.count) ; \(tally(kept.map(\.target)))")
 
-        // Spotlight longue traine (MDQuery, 200 au plus) : requetes generiques.
+        // Spotlight longue traine (NSMetadataQuery, 200 au plus, 2 s au plus) : requetes generiques.
+        let spotlight = SpotlightSearch()
         for q in ["pdf", "doc", "a", "e"] {
             let t = Date()
-            let items = SpotlightSearch.run(q, home: home)
+            let items = await spotlight.run(q)
             lines.append(String(format: "spotlight \u{00AB} %@ \u{00BB} : %d en %.0f ms ; %@", q, items.count,
                                 Date().timeIntervalSince(t) * 1000, tally(items.map(\.target))))
         }

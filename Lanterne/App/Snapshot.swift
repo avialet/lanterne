@@ -8,7 +8,7 @@ import LanterneCore
 /// LANTERNE_DB_PATH vers une base jetable. Apps du systeme seulement, fichiers d'exemple (chemins fictifs),
 /// 40 ouvertures fictives sur 3 semaines, contexte impose (9 h, depuis Mail). Scenarios : standard
 /// (`mainWindow` = Habitudes, `settings`, `about`, `update`), `floatingPanel` (champ vide), `query` (« cla »
-/// tape, avec « Plus loin »), `conflit` (carte d'accueil du raccourci), `vide` (Habitudes sans rien d'appris).
+/// tape, avec « Plus loin »), `conflit` (cartes d'accueil du raccourci et de l'acces aux dossiers), `vide` (Habitudes sans rien d'appris).
 extension AppDelegate {
     func runSnapshotIfRequested() -> Bool {
         guard SnapshotRequest.parse(prefix: Brand.name, arguments: CommandLine.arguments) != nil else { return false }
@@ -39,12 +39,14 @@ extension AppDelegate {
         let conflict = SnapshotScenario("conflit") {
             await ready()
             state.debugSetConflict(SymbolicHotKeys.parse(nil)[60])
+            state.debugShowFolderAccessCard(true)
             try await Task.sleep(for: .seconds(1))
             return WindowSummoner.mainWindow
         }
         let empty = SnapshotScenario("vide") {
             await ready()
             state.debugSetConflict(nil)
+            state.debugShowFolderAccessCard(false)
             state.eraseAll()
             try await Task.sleep(for: .seconds(1))
             return WindowSummoner.mainWindow

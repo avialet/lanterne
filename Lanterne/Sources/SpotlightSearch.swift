@@ -1,58 +1,83 @@
-import CoreServices
-import Foundation
+import AppKit
 import LanterneCore
-import os
 
-/// Longue traine : recherche Spotlight par nom (`MDQuery`, 200 resultats au plus, dossier personnel),
-/// lancee 150 ms apres la derniere frappe, a partir de 2 caracteres. Une recherche depassee n'est pas lancee,
-/// et son resultat est ignore s'il arrive apres une frappe plus recente.
-final class SpotlightSearch: Sendable {
+/// Longue traine : recherche Spotlight par nom (`NSMetadataQuery`, dossier personnel), lancee 150 ms apres la
+/// derniere frappe, a partir de 2 caracteres. Les resultats arrivent par lots (200 au plus) ; la requete
+/// s'arrete a la fin de la collecte, au bout de 2 s, ou a la frappe suivante. Une requete synchrone
+/// (`MDQuery`) ne convient pas : sans acces a Documents, Bureau et Telechargements, Spotlight filtre ces
+/// dossiers apres coup et une requete tres large (« a ») peut durer plus de 40 s, sans pouvoir l'annuler.
+@MainActor
+final class SpotlightSearch {
     static let delay: Duration = .milliseconds(150)
+    static let deadline: Duration = .seconds(2)
     static let maxCount = 200
 
-    private let queue = DispatchQueue(label: "fr.vialet.lanterne.spotlight", qos: .userInitiated)
-    private let generation = OSAllocatedUnfairLock(initialState: 0)
+    private var query: NSMetadataQuery?
+    private var observers: [NSObjectProtocol] = []
+    private var deadlineTask: Task<Void, Never>?
 
-    /// Annule les recherches en cours (leur resultat sera ignore).
-    func cancel() { generation.withLock { $0 += 1 } }
+    /// Arrete la requete en cours (aucun rappel ne suivra).
+    func cancel() {
+        deadlineTask?.cancel()
+        deadlineTask = nil
+        query?.stop()
+        query = nil
+        for o in observers { NotificationCenter.default.removeObserver(o) }
+        observers = []
+    }
 
-    @MainActor
-    func search(_ text: String, completion: @escaping @MainActor @Sendable ([Item]) -> Void) {
-        let token = generation.withLock { value -> Int in value += 1; return value }
+    /// `update` recoit les resultats a chaque lot, puis une derniere fois avec `finished` vrai.
+    func search(_ text: String, update: @escaping @MainActor (_ items: [Item], _ finished: Bool) -> Void) {
+        cancel()
+        let q = NSMetadataQuery()
+        let pattern = "*" + Self.escapeLike(text) + "*"
+        q.predicate = NSPredicate(format: "%K LIKE[cd] %@ AND %K != %@", NSMetadataItemDisplayNameKey, pattern,
+                                  NSMetadataItemContentTypeKey, "com.apple.application-bundle")
+        q.searchScopes = [NSMetadataQueryUserHomeScope]
+        q.notificationBatchingInterval = 0.1
         let home = FileManager.default.homeDirectoryForCurrentUser.path
-        queue.async { [generation] in
-            guard generation.withLock({ $0 }) == token else { return }
-            let items = Self.run(text, home: home)
-            DispatchQueue.main.async {
-                guard generation.withLock({ $0 }) == token else { return }
-                MainActor.assumeIsolated { completion(items) }
+        let center = NotificationCenter.default
+        let deliver: @MainActor (Bool) -> Void = { [weak self, weak q] finished in
+            guard let self, let q, self.query === q else { return }
+            q.disableUpdates()
+            var items: [Item] = []
+            for case let result as NSMetadataItem in q.results {
+                if items.count >= Self.maxCount { break }
+                if let item = RecentFiles.item(result, home: home) { items.append(item) }
             }
+            q.enableUpdates()
+            if finished { self.cancel() }
+            update(items, finished)
+        }
+        observers.append(center.addObserver(forName: .NSMetadataQueryGatheringProgress, object: q, queue: .main) { _ in
+            MainActor.assumeIsolated { deliver(false) }
+        })
+        observers.append(center.addObserver(forName: .NSMetadataQueryDidFinishGathering, object: q, queue: .main) { _ in
+            MainActor.assumeIsolated { deliver(true) }
+        })
+        query = q
+        q.start()
+        deadlineTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.deadline)
+            guard !Task.isCancelled, let self, self.query === q else { return }
+            deliver(true)
         }
     }
 
-    /// Requete synchrone (hors fil principal).
-    static func run(_ text: String, home: String) -> [Item] {
-        let escaped = text.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-            .replacingOccurrences(of: "*", with: "\\*")
-        let string = "kMDItemDisplayName == \"*\(escaped)*\"cd && kMDItemContentType != \"com.apple.application-bundle\""
-        guard let query = MDQueryCreate(kCFAllocatorDefault, string as CFString, nil, nil) else { return [] }
-        MDQuerySetMaxCount(query, maxCount)
-        MDQuerySetSearchScope(query, [home] as CFArray, 0)
-        guard MDQueryExecute(query, CFOptionFlags(kMDQuerySynchronous.rawValue)) else { return [] }
-        var items: [Item] = []
-        for i in 0..<MDQueryGetResultCount(query) {
-            guard let raw = MDQueryGetResultAtIndex(query, i) else { continue }
-            let item = unsafeBitCast(raw, to: MDItem.self)
-            guard let path = MDItemCopyAttribute(item, kMDItemPath) as? String, !path.contains(".app/") else { continue }
-            let type = MDItemCopyAttribute(item, kMDItemContentType) as? String ?? ""
-            let folder = type == "public.folder"
-            let name = folder ? (MDItemCopyAttribute(item, kMDItemDisplayName) as? String ?? (path as NSString).lastPathComponent)
-                : (path as NSString).lastPathComponent
-            let last = MDItemCopyAttribute(item, kMDItemLastUsedDate) as? Date
-            items.append(Item(key: Item.fileKey(path), title: name,
-                              subtitle: RecentFiles.abbreviate((path as NSString).deletingLastPathComponent, home: home),
-                              kind: folder ? .folder : .file, target: path, lastUsed: last))
+    /// Une recherche complete (sonde) : attend la fin de la collecte ou le delai.
+    func run(_ text: String) async -> [Item] {
+        await withCheckedContinuation { continuation in
+            search(text) { items, finished in if finished { continuation.resume(returning: items) } }
         }
-        return items
+    }
+
+    /// `*` et `?` sont des jokers de LIKE : on les echappe, comme la barre oblique inverse.
+    nonisolated static func escapeLike(_ text: String) -> String {
+        var out = ""
+        for c in text {
+            if c == "\\" || c == "*" || c == "?" { out.append("\\") }
+            out.append(c)
+        }
+        return out
     }
 }

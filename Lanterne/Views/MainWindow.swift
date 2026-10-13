@@ -52,6 +52,7 @@ struct MainWindow: View {
                 // En-tete fixe, liste defilante en dessous (la liste ne passe pas sous la barre de titre).
                 VStack(alignment: .leading, spacing: 14) {
                     if let conflict = state.conflict { WelcomeCard(conflict: conflict) }
+                    if state.needsFolderAccess { FolderAccessCard() }
                     if state.learningPaused { pausedBanner }
                     header
                 }
