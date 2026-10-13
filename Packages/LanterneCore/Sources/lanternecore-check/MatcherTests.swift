@@ -65,6 +65,8 @@ let matcherTests: (String, [Test]) = ("Matcher", [
         let m = Matcher.match(SearchQuery("keyb"), text)!
         expectEqual(m.tier, .keyword)
         expect(m.ranges.isEmpty)
+        expectEqual(m.keyword, "Keyboard", "mot-cle trouve, pour l'afficher")
+        expect(Matcher.match(SearchQuery("cla"), text)?.keyword == nil)
         expectEqual(Matcher.match(SearchQuery("voc"), text)?.tier, .keyword)
         expect(Matcher.match(SearchQuery("eyb"), text) == nil)
         expect(Matcher.match(SearchQuery("k"), text) == nil, "une lettre : pas de mot-cle")

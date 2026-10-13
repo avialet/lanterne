@@ -99,6 +99,11 @@ public struct ResultSection: Sendable, Identifiable {
     public let kind: ResultSectionKind
     public let items: [Ranked]
     public var id: String { kind.rawValue }
+
+    public init(kind: ResultSectionKind, items: [Ranked]) {
+        self.kind = kind
+        self.items = items
+    }
 }
 
 /// Index en memoire et classement : `score = correspondance x (1 + habitudes + a priori)`.

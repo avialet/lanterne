@@ -14,6 +14,7 @@ public struct SearchText: Sendable {
     let mask: UInt64
 
     struct Keyword: Sendable {
+        let original: String
         let scalars: [UInt32]
         let wordStarts: [Int]
     }
@@ -31,7 +32,7 @@ public struct SearchText: Sendable {
         for keyword in keywords {
             let k = Self.fold(keyword)
             guard !k.scalars.isEmpty else { continue }
-            list.append(Keyword(scalars: k.scalars, wordStarts: k.wordStarts))
+            list.append(Keyword(original: keyword, scalars: k.scalars, wordStarts: k.wordStarts))
             mask |= Self.mask(k.scalars)
         }
         self.keywords = list
@@ -154,6 +155,8 @@ public struct Match: Equatable, Sendable {
     public let score: Double
     /// Caracteres du titre d'origine a surligner (vide pour un mot-cle).
     public let ranges: [Range<Int>]
+    /// Mot-cle trouve (palier `.keyword`), pour le montrer sous le titre.
+    public var keyword: String? = nil
 }
 
 /// Appariement d'une requete et d'un texte, par paliers : nom exact > debut du nom > debut de mot >
@@ -206,13 +209,15 @@ public enum Matcher {
         let q = query.scalars
         guard q.count >= 2 else { return nil }
         var best: Double = 0
+        var found: String?
         for keyword in text.keywords where keyword.scalars.count >= q.count {
-            if keyword.scalars.count == q.count && keyword.scalars == q { best = max(best, 0.56); break }
+            if keyword.scalars.count == q.count && keyword.scalars == q { best = 0.56; found = keyword.original; break }
             for start in keyword.wordStarts where start + q.count <= keyword.scalars.count {
-                if hasPrefix(keyword.scalars, at: start, q) { best = max(best, start == 0 ? 0.52 : 0.48); break }
+                let score = start == 0 ? 0.52 : 0.48
+                if score > best && hasPrefix(keyword.scalars, at: start, q) { best = score; found = keyword.original; break }
             }
         }
-        return best > 0 ? Match(tier: .keyword, score: best, ranges: []) : nil
+        return best > 0 ? Match(tier: .keyword, score: best, ranges: [], keyword: found) : nil
     }
 
     // MARK: Paliers
