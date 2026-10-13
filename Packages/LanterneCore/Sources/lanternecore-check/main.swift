@@ -9,5 +9,6 @@ run([
     symbolicHotKeysTests,
     habitStoreTests,
     openPolicyTests,
+    vialetActionLinkTests,
     benchTests,
 ])
