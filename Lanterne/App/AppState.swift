@@ -290,7 +290,9 @@ final class AppState {
     // MARK: Recherche
 
     func search(keepSelection: Bool = false) {
+        #if DEBUG
         let started = DispatchTime.now().uptimeNanoseconds
+        #endif
         let q = SearchQuery(query)
         let previous = selectedKey
         furtherTask?.cancel()
