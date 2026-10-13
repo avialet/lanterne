@@ -1,0 +1,5 @@
+import LanterneCore
+
+run([
+    databaseTests,
+])
