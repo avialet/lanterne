@@ -63,9 +63,11 @@ enum AppIndex {
     static func item(at path: String) -> Item? {
         let url = URL(fileURLWithPath: path)
         let info = NSDictionary(contentsOf: url.appendingPathComponent("Contents/Info.plist")) as? [String: Any] ?? [:]
-        if info["LSUIElement"] as? Bool == true || (info["LSUIElement"] as? String) == "1" { return nil }
-        if info["LSBackgroundOnly"] as? Bool == true { return nil }
         let bundleId = info["CFBundleIdentifier"] as? String
+        // Les apps vialet.app sont accessoires (LSUIElement) mais s'ouvrent comme des apps.
+        let isVialetApp = bundleId?.hasPrefix("fr.vialet.") == true
+        if !isVialetApp, info["LSUIElement"] as? Bool == true || (info["LSUIElement"] as? String) == "1" { return nil }
+        if info["LSBackgroundOnly"] as? Bool == true { return nil }
         var title = FileManager.default.displayName(atPath: path)
         if title.hasSuffix(".app") { title = String(title.dropLast(4)) }
         let fileName = String(url.lastPathComponent.dropLast(4))

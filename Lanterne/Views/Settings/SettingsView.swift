@@ -13,8 +13,9 @@ struct SettingsView: View {
             Theme.paper.frame(height: 1)
             ScrollView {
             SettingsScreen(app: Brand.identity, hotKey: HotKeyController.shared, updater: Updater.shared,
-                           menuBar: MenuBarPresence.shared,
+                           menuBar: MenuBarPresence.shared, dock: DockPresence.shared,
                            hotKeyHint: "Depuis n'importe quelle app : ouvre le champ de recherche de Lanterne.",
+                           updateNote: HubPresence.updateNote,
                            width: 500) {
                 SpotlightCard()
                 SourcesCard()

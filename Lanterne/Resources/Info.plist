@@ -37,6 +37,8 @@
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>26.0</string>
+	<key>LSUIElement</key>
+	<true/>
 	<key>NSDocumentsFolderUsageDescription</key>
 	<string>Lanterne retrouve vos fichiers r&#xE9;cents par Spotlight, sans les lire ni les envoyer.</string>
 	<key>NSDesktopFolderUsageDescription</key>
